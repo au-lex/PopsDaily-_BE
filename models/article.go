@@ -14,6 +14,7 @@ type Article struct {
 	Author      string    `json:"author,omitempty"`
 	ImageURL    string    `json:"image_url,omitempty"`
 	Category    string    `json:"category,omitempty"`
+	Tags        string    `gorm:"type:text;index" json:"tags,omitempty"`
 	PublishedAt time.Time `json:"published_at"`
 	CreatedAt   time.Time `json:"created_at"`
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/mmcdole/gofeed"
@@ -67,6 +68,7 @@ func FetchAndStoreFeed(db *gorm.DB, feed *models.Feed) (int, error) {
 			Description: item.Description,
 			PublishedAt: published,
 			Category:    feed.Category,
+			Tags:        strings.Join(item.Categories, ","), 
 		}
 
 		if item.Author != nil {
