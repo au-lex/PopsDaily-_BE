@@ -11,7 +11,7 @@ import (
 	"github.com/mmcdole/gofeed"
 	"gorm.io/gorm"
 
-	"rss-backend/models"
+	"popsdaily/models"
 )
 
 var fp = newFeedParser()

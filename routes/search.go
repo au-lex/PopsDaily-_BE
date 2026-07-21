@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 
-	"rss-backend/handlers"
+	"popsdaily/handlers"
 )
 
 // RegisterSearchRoutes wires up /api/search endpoints. Public — no auth

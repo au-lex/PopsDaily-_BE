@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 
-	"rss-backend/handlers"
+	"popsdaily/handlers"
 )
 
 // RegisterBookmarkRoutes wires up all /api/bookmarks endpoints.

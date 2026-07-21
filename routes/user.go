@@ -4,8 +4,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 
-	"rss-backend/handlers"
-	"rss-backend/middleware"
+	"popsdaily/handlers"
+	"popsdaily/middleware"
 )
 
 

@@ -9,9 +9,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
 
-	"rss-backend/database"
-	"rss-backend/routes"
-	"rss-backend/services"
+	"popsdaily/database"
+	"popsdaily/routes"
+	"popsdaily/services"
 )
 
 func main() {
@@ -23,7 +23,17 @@ func main() {
 	if dsn == "" {
 		log.Fatal("DATABASE_URL is not set, e.g. host=localhost user=postgres password=postgres dbname=rss_backend port=5432 sslmode=disable")
 	}
+
+
 	database.Connect(dsn)
+
+if err := database.Migrate(); err != nil {
+	log.Fatalf("migration failed: %v", err)
+}
+
+	if err := services.InitFirebase(); err != nil {
+		log.Printf("firebase init warning: %v", err)
+	}
 
 	pollSpec := os.Getenv("POLL_INTERVAL")
 	if pollSpec == "" {
@@ -32,7 +42,7 @@ func main() {
 	services.StartPoller(database.DB, pollSpec)
 
 	app := fiber.New(fiber.Config{
-		AppName: "rss-backend",
+		AppName: "popsdaily",
 	})
 
 	app.Use(logger.New())

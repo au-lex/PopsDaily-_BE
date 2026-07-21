@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 
-	"rss-backend/models"
+	"popsdaily/models"
 )
 
 type BookmarkHandler struct {
