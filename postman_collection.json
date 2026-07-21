@@ -1,0 +1,101 @@
+{
+  "info": {
+    "name": "rss-backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "feed_id", "value": "1" },
+    { "key": "article_id", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/health"
+      }
+    },
+    {
+      "name": "Create Feed",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/api/feeds",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Punch Nigeria\",\n  \"url\": \"https://punchng.com/feed\",\n  \"category\": \"national\"\n}"
+        }
+      }
+    },
+    {
+      "name": "List Feeds",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/feeds"
+      }
+    },
+    {
+      "name": "Get Feed",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/feeds/{{feed_id}}"
+      }
+    },
+    {
+      "name": "Update Feed",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/api/feeds/{{feed_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"active\": false\n}"
+        }
+      }
+    },
+    {
+      "name": "Delete Feed",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/api/feeds/{{feed_id}}"
+      }
+    },
+    {
+      "name": "Fetch Feed Now",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/feeds/{{feed_id}}/fetch"
+      }
+    },
+    {
+      "name": "Fetch All Feeds",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/feeds/fetch-all"
+      }
+    },
+    {
+      "name": "List Articles",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/articles?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["api", "articles"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "limit", "value": "20" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Article",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/articles/{{article_id}}"
+      }
+    }
+  ]
+}
