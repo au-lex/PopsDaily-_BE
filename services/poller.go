@@ -7,7 +7,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 
-	"rss-backend/models"
+	"popsdaily/models"
 )
 
 // StartPoller schedules a recurring job (cron spec, e.g. "@every 15m")
@@ -28,7 +28,8 @@ func StartPoller(db *gorm.DB, spec string) *cron.Cron {
 	return c
 }
 
-// PollAllFeeds fetches every active feed concurrently and logs a summary.
+// PollAllFeeds fetches every active feed concurrently, logs a summary, and
+// pushes a notification for any category that got new articles this run.
 func PollAllFeeds(db *gorm.DB) {
 	var feeds []models.Feed
 	if err := db.Where("active = ?", true).Find(&feeds).Error; err != nil {
@@ -47,6 +48,10 @@ func PollAllFeeds(db *gorm.DB) {
 				return
 			}
 			log.Printf("poller: %s -> %d new articles", feed.Name, inserted)
+
+			if inserted > 0 {
+				NotifyNewArticles(db, feed.Category, inserted)
+			}
 		}(feeds[i])
 	}
 	wg.Wait()

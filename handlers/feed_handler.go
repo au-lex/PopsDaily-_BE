@@ -6,8 +6,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 
-	"rss-backend/models"
-	"rss-backend/services"
+	"popsdaily/models"
+	"popsdaily/services"
 )
 
 type FeedHandler struct {

@@ -14,7 +14,7 @@ func Register(app *fiber.App, db *gorm.DB) {
 	RegisterAuthRoutes(api, db)
 	RegisterUserRoutes(api, db)
 	RegisterSearchRoutes(api, db)
-	// RegisterDeviceRoutes(api, db)
+	RegisterDeviceRoutes(api, db)
 
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})

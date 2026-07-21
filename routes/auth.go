@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 
-	"rss-backend/handlers"
+	"popsdaily/handlers"
 )
 
 // RegisterAuthRoutes wires up all /api/auth endpoints: signup, login,

@@ -1,14 +1,15 @@
 package handlers
 
 import (
+	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 
-	"rss-backend/models"
-	"rss-backend/services"
-	"rss-backend/utils"
+	"popsdaily/models"
+	"popsdaily/services"
+	"popsdaily/utils"
 )
 
 type AuthHandler struct {
@@ -23,6 +24,7 @@ func NewAuthHandler(db *gorm.DB) *AuthHandler {
 func (h *AuthHandler) Signup(c *fiber.Ctx) error {
 	var req models.SignupRequest
 	if err := c.BodyParser(&req); err != nil {
+		log.Printf("signup: body parse error: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
 	if req.FullName == "" || req.Email == "" || req.Password == "" || req.Phone == "" {
@@ -39,6 +41,7 @@ func (h *AuthHandler) Signup(c *fiber.Ctx) error {
 
 	hashed, err := utils.HashPassword(req.Password)
 	if err != nil {
+		log.Printf("signup: hash password error for %s: %v", req.Email, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to process password"})
 	}
 
@@ -50,11 +53,13 @@ func (h *AuthHandler) Signup(c *fiber.Ctx) error {
 	}
 
 	if err := h.DB.Create(&user).Error; err != nil {
+		log.Printf("signup: create user error for %s: %v", req.Email, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create account"})
 	}
 
 	token, err := utils.GenerateJWT(user.ID, user.Email)
 	if err != nil {
+		log.Printf("signup: generate JWT error for user_id=%d: %v", user.ID, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "account created but failed to generate session"})
 	}
 
@@ -65,6 +70,7 @@ func (h *AuthHandler) Signup(c *fiber.Ctx) error {
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req models.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
+		log.Printf("login: body parse error: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
 	if req.Email == "" || req.Password == "" {
@@ -73,6 +79,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 
 	var user models.User
 	if err := h.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		log.Printf("login: user lookup failed for %s: %v", req.Email, err)
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid email or password"})
 	}
 
@@ -82,6 +89,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 
 	token, err := utils.GenerateJWT(user.ID, user.Email)
 	if err != nil {
+		log.Printf("login: generate JWT error for user_id=%d: %v", user.ID, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate session"})
 	}
 
@@ -94,6 +102,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 func (h *AuthHandler) ForgotPassword(c *fiber.Ctx) error {
 	var req models.ForgotPasswordRequest
 	if err := c.BodyParser(&req); err != nil {
+		log.Printf("forgot-password: body parse error: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
 	if req.Email == "" {
@@ -107,6 +116,7 @@ func (h *AuthHandler) ForgotPassword(c *fiber.Ctx) error {
 	}
 
 	if err := h.issueOTP(req.Email); err != nil {
+		log.Printf("forgot-password: issueOTP error for %s: %v", req.Email, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to send OTP"})
 	}
 
@@ -117,6 +127,7 @@ func (h *AuthHandler) ForgotPassword(c *fiber.Ctx) error {
 func (h *AuthHandler) ResendOTP(c *fiber.Ctx) error {
 	var req models.ResendOTPRequest
 	if err := c.BodyParser(&req); err != nil {
+		log.Printf("resend-otp: body parse error: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
 	if req.Email == "" {
@@ -129,6 +140,7 @@ func (h *AuthHandler) ResendOTP(c *fiber.Ctx) error {
 	}
 
 	if err := h.issueOTP(req.Email); err != nil {
+		log.Printf("resend-otp: issueOTP error for %s: %v", req.Email, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to resend OTP"})
 	}
 
@@ -139,6 +151,7 @@ func (h *AuthHandler) ResendOTP(c *fiber.Ctx) error {
 func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
 	var req models.ResetPasswordRequest
 	if err := c.BodyParser(&req); err != nil {
+		log.Printf("reset-password: body parse error: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
 	if req.Email == "" || req.OTP == "" || req.NewPassword == "" {
@@ -153,6 +166,7 @@ func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
 		Order("created_at desc").
 		First(&otpRecord).Error
 	if err != nil {
+		log.Printf("reset-password: OTP lookup failed for %s: %v", req.Email, err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid or expired OTP"})
 	}
 
@@ -162,15 +176,18 @@ func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
 
 	var user models.User
 	if err := h.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		log.Printf("reset-password: user lookup failed for %s: %v", req.Email, err)
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "account not found"})
 	}
 
 	hashed, err := utils.HashPassword(req.NewPassword)
 	if err != nil {
+		log.Printf("reset-password: hash password error for %s: %v", req.Email, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to process new password"})
 	}
 
 	if err := h.DB.Model(&user).Update("password", hashed).Error; err != nil {
+		log.Printf("reset-password: update password error for %s: %v", req.Email, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to update password"})
 	}
 
@@ -208,6 +225,7 @@ func (h *AuthHandler) GetProfile(c *fiber.Ctx) error {
 
 	var user models.User
 	if err := h.DB.First(&user, userID).Error; err != nil {
+		log.Printf("get-profile: user lookup failed for user_id=%d: %v", userID, err)
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
 	}
 
@@ -222,11 +240,13 @@ func (h *AuthHandler) UpdateProfile(c *fiber.Ctx) error {
 
 	var req models.UpdateProfileRequest
 	if err := c.BodyParser(&req); err != nil {
+		log.Printf("update-profile: body parse error for user_id=%d: %v", userID, err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
 
 	var user models.User
 	if err := h.DB.First(&user, userID).Error; err != nil {
+		log.Printf("update-profile: user lookup failed for user_id=%d: %v", userID, err)
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
 	}
 
@@ -252,6 +272,7 @@ func (h *AuthHandler) UpdateProfile(c *fiber.Ctx) error {
 	}
 
 	if err := h.DB.Model(&user).Updates(updates).Error; err != nil {
+		log.Printf("update-profile: update error for user_id=%d: %v", userID, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to update profile"})
 	}
 
@@ -267,6 +288,7 @@ func (h *AuthHandler) ChangePassword(c *fiber.Ctx) error {
 
 	var req models.ChangePasswordRequest
 	if err := c.BodyParser(&req); err != nil {
+		log.Printf("change-password: body parse error for user_id=%d: %v", userID, err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
 	if req.CurrentPassword == "" || req.NewPassword == "" {
@@ -278,6 +300,7 @@ func (h *AuthHandler) ChangePassword(c *fiber.Ctx) error {
 
 	var user models.User
 	if err := h.DB.First(&user, userID).Error; err != nil {
+		log.Printf("change-password: user lookup failed for user_id=%d: %v", userID, err)
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
 	}
 
@@ -287,10 +310,12 @@ func (h *AuthHandler) ChangePassword(c *fiber.Ctx) error {
 
 	hashed, err := utils.HashPassword(req.NewPassword)
 	if err != nil {
+		log.Printf("change-password: hash password error for user_id=%d: %v", userID, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to process new password"})
 	}
 
 	if err := h.DB.Model(&user).Update("password", hashed).Error; err != nil {
+		log.Printf("change-password: update error for user_id=%d: %v", userID, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to update password"})
 	}
 

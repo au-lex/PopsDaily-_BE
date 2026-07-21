@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"rss-backend/models"
+	"popsdaily/models"
 )
 
 var DB *gorm.DB
