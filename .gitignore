@@ -19,6 +19,7 @@ modules/
 .env.production.local
 
 .seed_feeds.sh
+.firebase-service-account.json
 
 # Build output
 dist
@@ -39,3 +40,4 @@ build
 
 # OS generated files
 Thumbs.dbfirebase-service-account.json
+firebase-service-account.json
