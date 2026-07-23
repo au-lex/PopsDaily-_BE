@@ -28,12 +28,13 @@ func (h *FeedHandler) CreateFeed(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "name and url are required"})
 	}
 
-	feed := models.Feed{
-		Name:     req.Name,
-		URL:      req.URL,
-		Category: req.Category,
-		Active:   true,
-	}
+feed := models.Feed{
+	Name:     req.Name,
+	Source:   req.Source,
+	URL:      req.URL,
+	Category: req.Category,
+	Active:   true,
+}
 
 	if err := h.DB.Create(&feed).Error; err != nil {
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "feed already exists or could not be saved: " + err.Error()})
@@ -138,4 +139,35 @@ func atoi(s string, fallback int) int {
 		return fallback
 	}
 	return v
+}
+
+func (h *FeedHandler) ListSources(c *fiber.Ctx) error {
+	var sources []struct {
+		Source string `json:"source"`
+		Count  int64  `json:"feed_count"`
+	}
+	if err := h.DB.Model(&models.Feed{}).
+		Select("source, count(*) as count").
+		Group("source").
+		Order("source asc").
+		Scan(&sources).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to fetch sources"})
+	}
+
+	type sourceResponse struct {
+		ID        int    `json:"id"`
+		Source    string `json:"source"`
+		FeedCount int64  `json:"feed_count"`
+	}
+
+	response := make([]sourceResponse, 0, len(sources))
+	for _, s := range sources {
+		id, ok := reverseSourceIDMap[s.Source]
+		if !ok {
+			id = 0
+		}
+		response = append(response, sourceResponse{ID: id, Source: s.Source, FeedCount: s.Count})
+	}
+
+	return c.JSON(response)
 }
