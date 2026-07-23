@@ -18,8 +18,8 @@ modules/
 .env.test.local
 .env.production.local
 
-.seed_feeds.sh
-.firebase-service-account.json
+# Secrets / credentials
+firebase-service-account.json
 
 # Build output
 dist
@@ -39,5 +39,4 @@ build
 *.sw?
 
 # OS generated files
-Thumbs.dbfirebase-service-account.json
-firebase-service-account.json
+Thumbs.db
