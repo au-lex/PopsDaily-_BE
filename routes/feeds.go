@@ -14,6 +14,7 @@ func RegisterFeedRoutes(api fiber.Router, db *gorm.DB) {
 	feeds := api.Group("/feeds")
 	feeds.Post("/", feedHandler.CreateFeed)
 	feeds.Get("/", feedHandler.ListFeeds)
+	feeds.Get("/sources", feedHandler.ListSources)  
 	feeds.Get("/:id", feedHandler.GetFeed)
 	feeds.Patch("/:id", feedHandler.UpdateFeed)
 	feeds.Delete("/:id", feedHandler.DeleteFeed)

@@ -18,6 +18,8 @@ modules/
 .env.test.local
 .env.production.local
 
+.seed_feeds.sh
+
 # Build output
 dist
 dist-ssr
