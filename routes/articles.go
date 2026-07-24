@@ -7,7 +7,6 @@ import (
 	"popsdaily/handlers"
 )
 
-
 func RegisterArticleRoutes(api fiber.Router, db *gorm.DB) {
 	articleHandler := handlers.NewArticleHandler(db)
 	extractHandler := handlers.NewExtractHandler(db)
@@ -16,6 +15,7 @@ func RegisterArticleRoutes(api fiber.Router, db *gorm.DB) {
 	articles.Get("/", articleHandler.ListArticles)
 	articles.Get("/source-id/:id", articleHandler.ListArticlesBySourceID)
 	articles.Get("/:id/extract", extractHandler.ExtractContent)
+	articles.Get("/:id/summary", articleHandler.GenerateArticleSummary)
 
 	articles.Get("/:id", articleHandler.GetArticle)
 }

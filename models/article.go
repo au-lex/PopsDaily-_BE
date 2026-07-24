@@ -11,6 +11,7 @@ type Article struct {
 	GUID        string    `gorm:"uniqueIndex;not null" json:"guid"`
 	Description string    `gorm:"type:text" json:"description"`
 	Content     string    `gorm:"type:text" json:"content,omitempty"`
+	Summary     string    `gorm:"type:text" json:"summary,omitempty"`
 	Author      string    `json:"author,omitempty"`
 	ImageURL    string    `json:"image_url,omitempty"`
 	Category    string    `json:"category,omitempty"`
