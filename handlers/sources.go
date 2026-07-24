@@ -5,7 +5,7 @@ package handlers
 var sourceIDMap = map[int]string{
 	1: "Vanguard",
 	2: "Punch",
-	// 3: "Premium Times",
+	3: "BBC News",
 	4: "Daily Post",
 	5: "The Guardian",
 	6: "Daily Sun",
